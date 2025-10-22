@@ -1,6 +1,11 @@
-import exampleIconUrl from "./noun-paperclip-7598668-00449F.png";
 import "./style.css";
 
-document.body.innerHTML = `
-  <p>Example image asset: <img src="${exampleIconUrl}" class="icon" /></p>
-`;
+//--------------CREATE TITLE-------------------
+const title = document.createElement("h1");
+title.textContent = "D2 Sketchpad";
+document.body.appendChild(title);
+
+//--------------CREATE CANVAS------------------
+const pad = document.createElement("canvas");
+pad.classList.add("sketchpad");
+document.body.appendChild(pad);

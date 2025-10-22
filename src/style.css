@@ -3,3 +3,13 @@
   vertical-align: top;
   border: 1px solid salmon;
 }
+
+.sketchpad {
+  height: 256px;
+  width: 256px;
+  border: thin solid black;
+  border-radius: 16px;
+  box-shadow: 16px 16px 8px rgba(0, 0, 0, 0.3);
+  overflow: visible;
+  background: white;
+}
