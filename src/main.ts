@@ -1,6 +1,6 @@
 import "./style.css";
 
-//----------------------------------------------------INITIAL GAME SETUP----------------
+//-----------------------------------------------------------------------------------------INITIAL GAME SETUP----------------
 //--------------CREATE TITLE-------------------
 const title = document.createElement("h1");
 title.textContent = "D2 Sketchpad";
@@ -16,23 +16,27 @@ document.body.appendChild(canvas);
 //--------------CREATE CTX----------------------
 const ctx = canvas.getContext("2d");
 ctx!.strokeStyle = "black";
-ctx!.lineWidth = 2;
 //--------------CREATE COMMAND INTERFACE----------
 interface DisplayCommand {
   display(ctx: CanvasRenderingContext2D): void;
   drag(x: number, y: number): void;
 }
-
-//-------------CREATE LINE ARRAYS---------------
+//--------------CREATE PREVIEW INTERFACE---------
+type ToolPreview = {
+  display(ctx: CanvasRenderingContext2D): void;
+  update(x: number, y: number): void; // track mouse position
+};
+//-------------CREATE GLOBAL VARIABLES---------------
 const lines: DisplayCommand[] = [];
 const redoLines: DisplayCommand[] = [];
+const toolPreviews: ToolPreview[] = [];
 let currentLine: DisplayCommand | null = null;
 let lineWidth: number = 2;
-
+let toolPreview: ToolPreview | null = null;
 //-------------CREATE CURSOR-------------------
 const cursor = { active: false, x: 0, y: 0 };
 
-//----------------------------------------------------CREATE UI BUTTONS-------------------
+//-----------------------------------------------------------------------------------------CREATE UI BUTTONS-------------------
 // CLEAR
 const clearButton = document.createElement("button");
 clearButton.textContent = "Clear";
@@ -53,7 +57,7 @@ document.body.append(thinButton);
 const thickButton = document.createElement("button");
 thickButton.textContent = "Thick";
 document.body.append(thickButton);
-//----------------------------------------------------MOUSE LISTENERS FOR DRAWING----------------
+//--------------------------------------------------------------------------------EVENT LISTENERS FOR DRAWING AND DISPLAYING PREVIEW----------------
 //----WHEN MOUSE DOWN ACTIVATE CURSOR--------------
 canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
@@ -62,16 +66,30 @@ canvas.addEventListener("mousedown", (e) => {
   currentLine = createMarkerLine(cursor.x, cursor.y, lineWidth);
   lines.push(currentLine);
 });
+canvas.addEventListener("mouseenter", () => {
+  toolPreview = createToolPreview(lineWidth);
+  toolPreviews.push(toolPreview);
+});
 //----AS MOUSE MOVES DRAW ON CANVAS--------------
 canvas.addEventListener("mousemove", (e) => {
+  cursor.x = e.offsetX;
+  cursor.y = e.offsetY;
+  if (!cursor.active) {
+    if (toolPreview) {
+      toolPreview.update(cursor.x, cursor.y);
+    }
+    canvas.dispatchEvent(new CustomEvent("tool-moved"));
+  }
   if (cursor.active) {
-    cursor.x = e.offsetX;
-    cursor.y = e.offsetY;
     if (currentLine) {
       currentLine.drag(cursor.x, cursor.y);
     }
     canvas.dispatchEvent(new CustomEvent("drawing-changed"));
   }
+});
+canvas.addEventListener("mouseleave", () => {
+  toolPreviews.splice(0, toolPreviews.length);
+  canvas.dispatchEvent(new CustomEvent("tool-moved"));
 });
 //----WHEN CURSOR IS RELEASED DEACTIVATE IT (DRAWING STOPS)---------------------------
 canvas.addEventListener("mouseup", () => {
@@ -80,7 +98,8 @@ canvas.addEventListener("mouseup", () => {
 });
 // wWHEN USER IS DRAWING, REDRAW THE CANVAS TO DISPLAY USER'S LINES
 canvas.addEventListener("drawing-changed", redraw);
-//----------------------------------------------------------BUTTON LISTENERS----------------
+canvas.addEventListener("tool-moved", redraw);
+//-------------------------------------------------------------------------------------------------BUTTON LISTENERS----------------
 //-------------CLEAR-------------
 clearButton.addEventListener("click", () => {
   ctx!.clearRect(0, 0, canvas.width, canvas.height);
@@ -108,13 +127,17 @@ thinButton.addEventListener("click", () => {
 });
 //-------------THICK-------------
 thickButton.addEventListener("click", () => {
-  lineWidth = 4;
+  lineWidth = 6;
 });
-//--------------------------------------------------------------FUNCTIONS-------------------
+//---------------------------------------------------------------------------------------------------FUNCTIONS-------------------
+//------------REDRAW----------------------------
 function redraw() {
   ctx!.clearRect(0, 0, canvas.width, canvas.height);
   for (const command of lines) {
     command.display(ctx!);
+  }
+  for (const preview of toolPreviews) {
+    preview.display(ctx!);
   }
 }
 //--------------CREATE COMMAND FACTORY----------
@@ -139,6 +162,33 @@ function createMarkerLine(x: number, y: number, width: number): DisplayCommand {
       }
       ctx.stroke();
       ctx.restore; // restore previous style
+    },
+  };
+}
+//----------CREATE TOOL PREVIEW----------------
+function createToolPreview(width: number): ToolPreview {
+  let x = 0;
+  let y = 0;
+
+  return {
+    update(nx, ny) {
+      x = nx;
+      y = ny;
+    },
+
+    display(ctx) {
+      ctx.save();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "rgba(0,0,0,0.5)";
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
+
+      // Draw a circle with the stroke width
+      ctx.beginPath();
+      ctx.arc(x, y, width / 2, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fill();
+
+      ctx.restore();
     },
   };
 }
