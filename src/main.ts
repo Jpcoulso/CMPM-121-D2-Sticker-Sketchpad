@@ -17,11 +17,16 @@ document.body.appendChild(canvas);
 const ctx = canvas.getContext("2d");
 ctx!.strokeStyle = "black";
 ctx!.lineWidth = 2;
+//--------------CREATE COMMAND INTERFACE----------
+interface DisplayCommand {
+  display(ctx: CanvasRenderingContext2D): void;
+  drag(x: number, y: number): void;
+}
 
 //-------------CREATE LINE ARRAYS---------------
-const lines: { x: number; y: number }[][] = []; // Lines is an array of arrays: "[][]", and each of those arrays contains "{x: number, y: number}" objects
-const redoLines: { x: number; y: number }[][] = [];
-let currentLine: Array<{ x: number; y: number }> = [];
+const lines: DisplayCommand[] = [];
+const redoLines: DisplayCommand[] = [];
+let currentLine: DisplayCommand | null = null;
 
 //-------------CREATE CURSOR-------------------
 const cursor = { active: false, x: 0, y: 0 };
@@ -44,30 +49,27 @@ canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
   cursor.x = e.offsetX;
   cursor.y = e.offsetY;
-  currentLine = [];
+  currentLine = createMarkerLine(cursor.x, cursor.y);
   lines.push(currentLine);
-  currentLine.push({ x: cursor.x, y: cursor.y });
 });
 //----AS MOUSE MOVES DRAW ON CANVAS--------------
 canvas.addEventListener("mousemove", (e) => {
   if (cursor.active) {
-    //ctx!.beginPath();
-    //ctx!.moveTo(cursor.x, cursor.y);
-    //ctx!.lineTo(e.offsetX, e.offsetY);
-    //ctx!.stroke();
     cursor.x = e.offsetX;
     cursor.y = e.offsetY;
-    currentLine.push({ x: cursor.x, y: cursor.y });
+    if (currentLine) {
+      currentLine.drag(cursor.x, cursor.y);
+    }
     canvas.dispatchEvent(new CustomEvent("drawing-changed"));
   }
 });
-// wWHEN USER IS DRAWING, REDRAW THE CANVAS TO DISPLAY USER'S LINES
-canvas.addEventListener("drawing-changed", redraw);
 //----WHEN CURSOR IS RELEASED DEACTIVATE IT (DRAWING STOPS)---------------------------
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
-  currentLine = [];
+  currentLine = null;
 });
+// wWHEN USER IS DRAWING, REDRAW THE CANVAS TO DISPLAY USER'S LINES
+canvas.addEventListener("drawing-changed", redraw);
 //----------------------------------------------------------BUTTON LISTENERS----------------
 //-------------CLEAR-------------
 clearButton.addEventListener("click", () => {
@@ -82,6 +84,7 @@ undoButton.addEventListener("click", () => {
     canvas.dispatchEvent(new CustomEvent("drawing-changed"));
   }
 });
+//-------------REDO-------------
 redoButton.addEventListener("click", () => {
   const lastLine = redoLines.pop();
   if (lastLine !== undefined) {
@@ -92,15 +95,29 @@ redoButton.addEventListener("click", () => {
 //--------------------------------------------------------------FUNCTIONS-------------------
 function redraw() {
   ctx!.clearRect(0, 0, canvas.width, canvas.height);
-  for (const line of lines) {
-    if (line.length > 1) {
-      ctx!.beginPath();
-      const { x, y } = line[0];
-      ctx!.moveTo(x, y);
-      for (const { x, y } of line) {
-        ctx!.lineTo(x, y);
-      }
-      ctx!.stroke();
-    }
+  for (const command of lines) {
+    command.display(ctx!);
   }
+}
+//--------------CREATE COMMAND FACTORY----------
+// creates a command that holds: points: an array of points that form a line, drag: a method to add more points to line, display: a method to display the line
+function createMarkerLine(x: number, y: number): DisplayCommand {
+  const points = [{ x, y }];
+
+  return {
+    drag(x, y) {
+      points.push({ x, y });
+    },
+
+    display(ctx) {
+      if (points.length < 2) return;
+
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (const { x, y } of points) {
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    },
+  };
 }
