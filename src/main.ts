@@ -20,6 +20,7 @@ ctx!.lineWidth = 2;
 
 //-------------CREATE LINE ARRAYS---------------
 const lines: { x: number; y: number }[][] = []; // Lines is an array of arrays: "[][]", and each of those arrays contains "{x: number, y: number}" objects
+const redoLines: { x: number; y: number }[][] = [];
 let currentLine: Array<{ x: number; y: number }> = [];
 
 //-------------CREATE CURSOR-------------------
@@ -30,6 +31,13 @@ const clearButton = document.createElement("button");
 clearButton.textContent = "Clear";
 document.body.append(clearButton);
 
+const undoButton = document.createElement("button");
+undoButton.textContent = "Undo";
+document.body.append(undoButton);
+
+const redoButton = document.createElement("button");
+redoButton.textContent = "Redo";
+document.body.append(redoButton);
 //----------------------------------------------------MOUSE LISTENERS FOR DRAWING----------------
 //----WHEN MOUSE DOWN ACTIVATE CURSOR--------------
 canvas.addEventListener("mousedown", (e) => {
@@ -61,9 +69,25 @@ canvas.addEventListener("mouseup", () => {
   currentLine = [];
 });
 //----------------------------------------------------------BUTTON LISTENERS----------------
+//-------------CLEAR-------------
 clearButton.addEventListener("click", () => {
   ctx!.clearRect(0, 0, canvas.width, canvas.height);
   lines.splice(0, lines.length);
+});
+//-------------UNDO-------------
+undoButton.addEventListener("click", () => {
+  const lastLine = lines.pop();
+  if (lastLine !== undefined) {
+    redoLines.push(lastLine);
+    canvas.dispatchEvent(new CustomEvent("drawing-changed"));
+  }
+});
+redoButton.addEventListener("click", () => {
+  const lastLine = redoLines.pop();
+  if (lastLine !== undefined) {
+    lines.push(lastLine);
+    canvas.dispatchEvent(new CustomEvent("drawing-changed"));
+  }
 });
 //--------------------------------------------------------------FUNCTIONS-------------------
 function redraw() {
