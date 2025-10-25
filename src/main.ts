@@ -27,29 +27,39 @@ interface DisplayCommand {
 const lines: DisplayCommand[] = [];
 const redoLines: DisplayCommand[] = [];
 let currentLine: DisplayCommand | null = null;
+let lineWidth: number = 2;
 
 //-------------CREATE CURSOR-------------------
 const cursor = { active: false, x: 0, y: 0 };
 
-//------------CREATE UI BUTTONS-------------------
+//----------------------------------------------------CREATE UI BUTTONS-------------------
+// CLEAR
 const clearButton = document.createElement("button");
 clearButton.textContent = "Clear";
 document.body.append(clearButton);
-
+// UNDO
 const undoButton = document.createElement("button");
 undoButton.textContent = "Undo";
 document.body.append(undoButton);
-
+// REDO
 const redoButton = document.createElement("button");
 redoButton.textContent = "Redo";
 document.body.append(redoButton);
+// THIN
+const thinButton = document.createElement("button");
+thinButton.textContent = "Thin";
+document.body.append(thinButton);
+// THICK
+const thickButton = document.createElement("button");
+thickButton.textContent = "Thick";
+document.body.append(thickButton);
 //----------------------------------------------------MOUSE LISTENERS FOR DRAWING----------------
 //----WHEN MOUSE DOWN ACTIVATE CURSOR--------------
 canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
   cursor.x = e.offsetX;
   cursor.y = e.offsetY;
-  currentLine = createMarkerLine(cursor.x, cursor.y);
+  currentLine = createMarkerLine(cursor.x, cursor.y, lineWidth);
   lines.push(currentLine);
 });
 //----AS MOUSE MOVES DRAW ON CANVAS--------------
@@ -92,6 +102,14 @@ redoButton.addEventListener("click", () => {
     canvas.dispatchEvent(new CustomEvent("drawing-changed"));
   }
 });
+//-------------THIN-------------
+thinButton.addEventListener("click", () => {
+  lineWidth = 2;
+});
+//-------------THICK-------------
+thickButton.addEventListener("click", () => {
+  lineWidth = 4;
+});
 //--------------------------------------------------------------FUNCTIONS-------------------
 function redraw() {
   ctx!.clearRect(0, 0, canvas.width, canvas.height);
@@ -101,7 +119,7 @@ function redraw() {
 }
 //--------------CREATE COMMAND FACTORY----------
 // creates a command that holds: points: an array of points that form a line, drag: a method to add more points to line, display: a method to display the line
-function createMarkerLine(x: number, y: number): DisplayCommand {
+function createMarkerLine(x: number, y: number, width: number): DisplayCommand {
   const points = [{ x, y }];
 
   return {
@@ -112,12 +130,15 @@ function createMarkerLine(x: number, y: number): DisplayCommand {
     display(ctx) {
       if (points.length < 2) return;
 
+      ctx.save(); // save current style
+      ctx.lineWidth = width; // change style to what user wants for this line
       ctx.beginPath();
       ctx.moveTo(points[0].x, points[0].y);
       for (const { x, y } of points) {
         ctx.lineTo(x, y);
       }
       ctx.stroke();
+      ctx.restore; // restore previous style
     },
   };
 }
