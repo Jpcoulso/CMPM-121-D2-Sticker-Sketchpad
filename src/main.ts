@@ -58,6 +58,20 @@ const stickers: StickerObject[] = [
     baseLine: "middle",
     font: "24px Arial",
   },
+  {
+    name: "pumpkin",
+    text: "🎃",
+    align: "center",
+    baseLine: "middle",
+    font: "24px Arial",
+  },
+  {
+    name: "ghost",
+    text: "👻",
+    align: "center",
+    baseLine: "middle",
+    font: "24px Arial",
+  },
 ];
 
 //-----------------------------------------------------------------------------------------CREATE UI BUTTONS-------------------
@@ -120,6 +134,24 @@ document.body.append(skullButton);
 skullButton.addEventListener("click", () => {
   usingSticker = true;
   activeSticker = stickers.find((s) => s.name === "skull")!;
+});
+// PUMPKIN EMOJI
+const pumpkinButton = document.createElement("button");
+pumpkinButton.textContent = "🎃";
+document.body.append(pumpkinButton);
+// LISTENER
+pumpkinButton.addEventListener("click", () => {
+  usingSticker = true;
+  activeSticker = stickers.find((s) => s.name === "pumpkin")!;
+});
+// GHOST EMOJI
+const ghostButton = document.createElement("button");
+ghostButton.textContent = "👻";
+document.body.append(ghostButton);
+// LISTENER
+ghostButton.addEventListener("click", () => {
+  usingSticker = true;
+  activeSticker = stickers.find((s) => s.name === "ghost")!;
 });
 //--------------------------------------------------------------------------------EVENT LISTENERS FOR DRAWING, AND DISPLAYING PREVIEW----------------
 //------------------------------WHEN MOUSE DOWN ACTIVATE CURSOR--------------
