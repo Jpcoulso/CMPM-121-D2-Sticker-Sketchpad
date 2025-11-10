@@ -153,6 +153,15 @@ ghostButton.addEventListener("click", () => {
   usingSticker = true;
   activeSticker = stickers.find((s) => s.name === "ghost")!;
 });
+// CUSTOM BUTTON
+const customButton = document.createElement("button");
+customButton.textContent = "Custom Sticker";
+document.body.append(customButton);
+// LISTENER
+customButton.addEventListener("click", () => {
+  createCustomSticker();
+});
+
 //--------------------------------------------------------------------------------EVENT LISTENERS FOR DRAWING, AND DISPLAYING PREVIEW----------------
 //------------------------------WHEN MOUSE DOWN ACTIVATE CURSOR--------------
 canvas.addEventListener("mousedown", (e) => {
@@ -278,6 +287,7 @@ function createToolPreview(width: number): ToolPreview {
     },
   };
 }
+//---------STICKER COMMAND--------------
 function createStickerCommmand(
   sticker: StickerObject,
   x: number,
@@ -299,6 +309,7 @@ function createStickerCommmand(
     },
   };
 }
+// ----------STICKER PREVIEW-----------
 function createStickerPreview(sticker: StickerObject): ToolPreview {
   let x = 0;
   let y = 0;
@@ -321,4 +332,25 @@ function createStickerPreview(sticker: StickerObject): ToolPreview {
       ctx.restore();
     },
   };
+}
+//----------------CREATE CUSTOM STICKER-------------
+function createCustomSticker() {
+  const userInput = prompt("Paste your Custom sticker: ", "user sticker");
+  const userButton = document.createElement("button");
+  userButton.textContent = `${userInput}`;
+  document.body.append(userButton);
+  stickers.push(
+    {
+      name: `${userInput}`,
+      text: `${userInput}`,
+      align: "center",
+      baseLine: "middle",
+      font: "24px Arial",
+    },
+  );
+  // LISTENER
+  userButton.addEventListener("click", () => {
+    usingSticker = true;
+    activeSticker = stickers.find((s) => s.name === `${userInput}`)!;
+  });
 }
