@@ -92,6 +92,7 @@ interface StickerObject {
   align: CanvasTextAlign;
   baseLine: CanvasTextBaseline;
   font: string;
+  rotation: number;
 }
 
 const stickers: StickerObject[] = [
@@ -101,6 +102,7 @@ const stickers: StickerObject[] = [
     align: "center",
     baseLine: "middle",
     font: "24px Arial",
+    rotation: 0,
   },
   {
     name: "pumpkin",
@@ -108,6 +110,7 @@ const stickers: StickerObject[] = [
     align: "center",
     baseLine: "middle",
     font: "24px Arial",
+    rotation: 0,
   },
   {
     name: "ghost",
@@ -115,6 +118,7 @@ const stickers: StickerObject[] = [
     align: "center",
     baseLine: "middle",
     font: "24px Arial",
+    rotation: 0,
   },
 ];
 
@@ -181,6 +185,7 @@ rightPanel.append(skullButton);
 skullButton.addEventListener("click", () => {
   usingSticker = true;
   activeSticker = stickers.find((s) => s.name === "skull")!;
+  activeSticker.rotation = getRandomRotation();
 });
 // PUMPKIN EMOJI
 const pumpkinButton = document.createElement("button");
@@ -191,6 +196,7 @@ rightPanel.append(pumpkinButton);
 pumpkinButton.addEventListener("click", () => {
   usingSticker = true;
   activeSticker = stickers.find((s) => s.name === "pumpkin")!;
+  activeSticker.rotation = getRandomRotation();
 });
 // GHOST EMOJI
 const ghostButton = document.createElement("button");
@@ -201,6 +207,7 @@ rightPanel.append(ghostButton);
 ghostButton.addEventListener("click", () => {
   usingSticker = true;
   activeSticker = stickers.find((s) => s.name === "ghost")!;
+  activeSticker.rotation = getRandomRotation();
 });
 // CUSTOM BUTTON
 const customButton = document.createElement("button");
@@ -360,10 +367,12 @@ function createStickerCommmand(
 
     display(ctx: CanvasRenderingContext2D) {
       ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(sticker.rotation);
       ctx.font = sticker.font;
       ctx.textAlign = sticker.align;
       ctx.textBaseline = sticker.baseLine;
-      ctx.fillText(sticker.text, x, y);
+      ctx.fillText(sticker.text, 0, 0);
       ctx.restore();
     },
   };
@@ -387,7 +396,9 @@ function createStickerPreview(sticker: StickerObject): ToolPreview {
 
       // Semi-transparent preview
       ctx.globalAlpha = 0.7;
-      ctx.fillText(sticker.text, x, y);
+      ctx.translate(x, y);
+      ctx.rotate(sticker.rotation);
+      ctx.fillText(sticker.text, 0, 0);
       ctx.restore();
     },
   };
@@ -406,6 +417,7 @@ function createCustomSticker() {
       align: "center",
       baseLine: "middle",
       font: "24px Arial",
+      rotation: 0,
     },
   );
   // LISTENER
@@ -453,4 +465,8 @@ function selectRandomColor() {
       sq.classList.remove("selected");
     }
   });
+}
+//----RANDOM ROTATION----
+function getRandomRotation() {
+  return Math.random() * Math.PI * 2; // 0 → 360 degrees in radians
 }
