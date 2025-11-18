@@ -14,17 +14,33 @@ let lineWidth: number = 2;
 let toolPreview: ToolPreview | null = null;
 const cursor = { active: false, x: 0, y: 0 };
 
-//--------------CREATE TITLE-------------------
-const title = document.createElement("h1");
-title.textContent = "D2 Sketchpad";
-document.body.appendChild(title);
+// ----- CREATE LAYOUT CONTAINER -----
+const container = document.createElement("div");
+container.className = "sketch-container";
 
+const leftPanel = document.createElement("div");
+leftPanel.className = "left-buttons";
+
+const rightPanel = document.createElement("div");
+rightPanel.className = "right-buttons";
+
+// Put container into the document
+document.body.appendChild(container);
+container.appendChild(leftPanel);
+container.appendChild(rightPanel);
+
+//--------------CREATE TITLE-------------------
+const header = document.createElement("div");
+header.className = "header";
+header.textContent = "D2 Sketchpad";
+
+document.body.insertBefore(header, container);
 //--------------CREATE CANVAS------------------
 const canvas = document.createElement("canvas");
 canvas.width = 256;
 canvas.height = 256;
 canvas.classList.add("sketchpad");
-document.body.appendChild(canvas);
+container.insertBefore(canvas, rightPanel);
 
 //--------------CREATE CTX----------------------
 const ctx = canvas.getContext("2d");
@@ -78,7 +94,7 @@ const stickers: StickerObject[] = [
 // CLEAR
 const clearButton = document.createElement("button");
 clearButton.textContent = "Clear";
-document.body.append(clearButton);
+leftPanel.append(clearButton);
 // LISTENER
 clearButton.addEventListener("click", () => {
   ctx!.clearRect(0, 0, canvas.width, canvas.height);
@@ -87,7 +103,7 @@ clearButton.addEventListener("click", () => {
 // UNDO
 const undoButton = document.createElement("button");
 undoButton.textContent = "Undo";
-document.body.append(undoButton);
+leftPanel.append(undoButton);
 // LISTENER
 undoButton.addEventListener("click", () => {
   const lastLine = lines.pop();
@@ -99,7 +115,7 @@ undoButton.addEventListener("click", () => {
 // REDO
 const redoButton = document.createElement("button");
 redoButton.textContent = "Redo";
-document.body.append(redoButton);
+leftPanel.append(redoButton);
 // LISTENER
 redoButton.addEventListener("click", () => {
   const lastLine = redoLines.pop();
@@ -111,7 +127,7 @@ redoButton.addEventListener("click", () => {
 // THIN
 const thinButton = document.createElement("button");
 thinButton.textContent = "Thin";
-document.body.append(thinButton);
+leftPanel.append(thinButton);
 // LISTENER
 thinButton.addEventListener("click", () => {
   usingSticker = false;
@@ -120,7 +136,7 @@ thinButton.addEventListener("click", () => {
 // THICK
 const thickButton = document.createElement("button");
 thickButton.textContent = "Thick";
-document.body.append(thickButton);
+leftPanel.append(thickButton);
 // LISTENER
 thickButton.addEventListener("click", () => {
   usingSticker = false;
@@ -129,7 +145,8 @@ thickButton.addEventListener("click", () => {
 // SKULL EMOJI
 const skullButton = document.createElement("button");
 skullButton.textContent = "💀";
-document.body.append(skullButton);
+skullButton.classList.add("sticker-btn");
+rightPanel.append(skullButton);
 // LISTENER
 skullButton.addEventListener("click", () => {
   usingSticker = true;
@@ -138,7 +155,8 @@ skullButton.addEventListener("click", () => {
 // PUMPKIN EMOJI
 const pumpkinButton = document.createElement("button");
 pumpkinButton.textContent = "🎃";
-document.body.append(pumpkinButton);
+pumpkinButton.classList.add("sticker-btn");
+rightPanel.append(pumpkinButton);
 // LISTENER
 pumpkinButton.addEventListener("click", () => {
   usingSticker = true;
@@ -147,7 +165,8 @@ pumpkinButton.addEventListener("click", () => {
 // GHOST EMOJI
 const ghostButton = document.createElement("button");
 ghostButton.textContent = "👻";
-document.body.append(ghostButton);
+ghostButton.classList.add("sticker-btn");
+rightPanel.append(ghostButton);
 // LISTENER
 ghostButton.addEventListener("click", () => {
   usingSticker = true;
@@ -156,7 +175,7 @@ ghostButton.addEventListener("click", () => {
 // CUSTOM BUTTON
 const customButton = document.createElement("button");
 customButton.textContent = "Custom Sticker";
-document.body.append(customButton);
+rightPanel.append(customButton);
 // LISTENER
 customButton.addEventListener("click", () => {
   createCustomSticker();
@@ -164,7 +183,7 @@ customButton.addEventListener("click", () => {
 // EXPORT BUTTON
 const exportButton = document.createElement("button");
 exportButton.textContent = "Export (1024x1024)";
-document.body.append(exportButton);
+rightPanel.append(exportButton);
 // LISTENER
 exportButton.addEventListener("click", () => {
   exportCanvas();
@@ -346,7 +365,8 @@ function createCustomSticker() {
   const userInput = prompt("Paste your Custom sticker: ", "user sticker");
   const userButton = document.createElement("button");
   userButton.textContent = `${userInput}`;
-  document.body.append(userButton);
+  userButton.classList.add("sticker-btn");
+  rightPanel.append(userButton);
   stickers.push(
     {
       name: `${userInput}`,
