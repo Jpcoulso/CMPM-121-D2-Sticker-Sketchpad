@@ -161,6 +161,14 @@ document.body.append(customButton);
 customButton.addEventListener("click", () => {
   createCustomSticker();
 });
+// EXPORT BUTTON
+const exportButton = document.createElement("button");
+exportButton.textContent = "Export (1024x1024)";
+document.body.append(exportButton);
+// LISTENER
+exportButton.addEventListener("click", () => {
+  exportCanvas();
+});
 
 //--------------------------------------------------------------------------------EVENT LISTENERS FOR DRAWING, AND DISPLAYING PREVIEW----------------
 //------------------------------WHEN MOUSE DOWN ACTIVATE CURSOR--------------
@@ -352,5 +360,29 @@ function createCustomSticker() {
   userButton.addEventListener("click", () => {
     usingSticker = true;
     activeSticker = stickers.find((s) => s.name === `${userInput}`)!;
+  });
+}
+//----------------EXPORT CANVAS-------------
+function exportCanvas() {
+  //make new canvas
+  const exportCanvas = document.createElement("canvas");
+  exportCanvas.width = 1024;
+  exportCanvas.height = 1024;
+  const exportCtx = exportCanvas.getContext("2d")!;
+  exportCtx.scale(4, 4); //set scale to 4x original canvas
+
+  //redraw exisitng brush strokes and stickers
+  for (const command of lines) {
+    command.display(exportCtx!);
+  }
+  //export canvas as 'binary large object' (blob)]
+  exportCanvas.toBlob((blob) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "drawing-export.png";
+    a.click();
+    URL.revokeObjectURL(url);
   });
 }
