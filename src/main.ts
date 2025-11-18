@@ -33,8 +33,36 @@ container.appendChild(rightPanel);
 const header = document.createElement("div");
 header.className = "header";
 header.textContent = "D2 Sketchpad";
-
 document.body.insertBefore(header, container);
+
+// ---- CREATE COLOR PICKER ----
+const colorPicker = document.createElement("div");
+colorPicker.className = "color-picker";
+document.body.insertBefore(colorPicker, container);
+// Define available marker colors (added black)
+const colors = ["black", "red", "blue", "green"];
+// Track selected drawing color
+let currentColor = "black";
+// Create the squares for each color
+colors.forEach((color) => {
+  const square = document.createElement("div");
+  square.className = "color-square";
+  square.style.backgroundColor = color;
+  // If this is the default color, mark it selected
+  if (color === currentColor) {
+    square.classList.add("selected");
+  }
+  // Add click listener
+  square.addEventListener("click", () => {
+    currentColor = color;
+    // Remove previous selection highlight
+    document.querySelectorAll(".color-square")
+      .forEach((el) => el.classList.remove("selected"));
+    // Highlight the selected one
+    square.classList.add("selected");
+  });
+  colorPicker.appendChild(square);
+});
 //--------------CREATE CANVAS------------------
 const canvas = document.createElement("canvas");
 canvas.width = 256;
@@ -132,6 +160,7 @@ leftPanel.append(thinButton);
 thinButton.addEventListener("click", () => {
   usingSticker = false;
   lineWidth = 2;
+  selectRandomColor();
 });
 // THICK
 const thickButton = document.createElement("button");
@@ -141,6 +170,7 @@ leftPanel.append(thickButton);
 thickButton.addEventListener("click", () => {
   usingSticker = false;
   lineWidth = 6;
+  selectRandomColor();
 });
 // SKULL EMOJI
 const skullButton = document.createElement("button");
@@ -266,6 +296,7 @@ function redraw() {
 // creates a command that holds: points: an array of points that form a line, drag: a method to add more points to line, display: a method to display the line
 function createMarkerLine(x: number, y: number, width: number): MarkerLine {
   const points = [{ x, y }];
+  const color = currentColor;
 
   return {
     drag(x, y) {
@@ -277,6 +308,7 @@ function createMarkerLine(x: number, y: number, width: number): MarkerLine {
 
       ctx.save(); // save current style
       ctx.lineWidth = width; // change style to what user wants for this line
+      ctx.strokeStyle = color; // save color inside each marker command
       ctx.beginPath();
       ctx.moveTo(points[0].x, points[0].y);
       for (const { x, y } of points) {
@@ -404,5 +436,21 @@ function exportCanvas() {
     a.download = "drawing-export.png";
     a.click();
     URL.revokeObjectURL(url);
+  });
+}
+//----SELECT RANDOM COLOR------
+function selectRandomColor() {
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  currentColor = randomColor;
+
+  document.querySelectorAll(".color-square").forEach((square) => {
+    const sq = square as HTMLElement;
+
+    // Compare using the same string we set originally (from colors[])
+    if (sq.style.backgroundColor === randomColor) {
+      sq.classList.add("selected");
+    } else {
+      sq.classList.remove("selected");
+    }
   });
 }

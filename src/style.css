@@ -114,3 +114,29 @@ body {
   margin: 0;
   font-family: sans-serif;
 }
+
+/* Container for color squares */
+.color-picker {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 15px 0 25px 0;
+}
+
+/* Individual color squares */
+.color-square {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border 0.15s;
+  border: 3px solid transparent;
+}
+
+/* Highlight when selected */
+.color-square.selected {
+  transform: scale(1.1);
+  border: 3px solid black;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
